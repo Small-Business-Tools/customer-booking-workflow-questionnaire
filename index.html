@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Workflow Discovery Questionnaire</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-bg: #0a0e14;
+            --color-surface: #151b24;
+            --color-primary: #00d9ff;
+            --color-secondary: #ff006e;
+            --color-accent: #ffbe0b;
+            --color-text: #e8edf3;
+            --color-text-dim: #8892a0;
+            --color-border: #1f2937;
+            --font-display: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: var(--font-display);
+            background: var(--color-bg);
+            color: var(--color-text);
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 217, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 110, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--color-border);
+            animation: fadeSlideDown 0.6s ease-out;
+        }
+
+        h1 {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--color-text-dim);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .progress-container {
+            margin: 30px 0;
+            animation: fadeIn 0.6s ease-out 0.2s backwards;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--color-surface);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--color-border);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 100px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3));
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--color-text-dim);
+        }
+
+        .step {
+            display: none;
+            animation: fadeSlideIn 0.5s ease-out;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .question-card {
+            background: var(--color-surface);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid var(--color-border);
+            transition: var(--transition);
+        }
+
+        .question-card:hover {
+            border-color: var(--color-primary);
+            box-shadow: 0 8px 30px rgba(0, 217, 255, 0.15);
+        }
+
+        .question-label {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            color: var(--color-text);
+            line-height: 1.4;
+        }
+
+        .question-label .required {
+            color: var(--color-secondary);
+            margin-left: 4px;
+        }
+
+        .question-help {
+            font-size: 0.9rem;
+            color: var(--color-text-dim);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--color-bg);
+            border: 2px solid var(--color-border);
+            border-radius: 10px;
+            color: var(--color-text);
+            font-family: var(--font-display);
+            font-size: 1rem;
+            transition: var(--transition);
+            margin-bottom: 12px;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: var(--font-display);
+        }
+
+        .radio-group,
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .radio-option,
+        .checkbox-option {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--color-bg);
+            border: 2px solid var(--color-border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .radio-option:hover,
+        .checkbox-option:hover {
+            border-color: var(--color-primary);
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        .radio-option input,
+        .checkbox-option input {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--color-primary);
+        }
+
+        .radio-option.selected,
+        .checkbox-option.selected {
+            border-color: var(--color-primary);
+            background: rgba(0, 217, 255, 0.1);
+        }
+
+        .slider-container {
+            padding: 20px 10px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: var(--color-bg);
+            outline: none;
+            -webkit-appearance: none;
+            border: 1px solid var(--color-border);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 217, 255, 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 217, 255, 0.5);
+        }
+
+        .slider-value {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-primary);
+            font-family: var(--font-mono);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 16px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: var(--font-display);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+            color: var(--color-bg);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 217, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--color-surface);
+            color: var(--color-text);
+            border: 2px solid var(--color-border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--color-primary);
+            background: rgba(0, 217, 255, 0.1);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .summary-section {
+            background: var(--color-surface);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid var(--color-border);
+        }
+
+        .summary-section h3 {
+            color: var(--color-primary);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .summary-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-item strong {
+            color: var(--color-accent);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .summary-item span {
+            color: var(--color-text);
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        @keyframes fadeSlideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            header {
+                padding: 30px 15px 20px;
+            }
+
+            .question-card {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Business Workflow Discovery</h1>
+            <p class="subtitle">Help us understand your current process and automation goals</p>
+        </header>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <div class="progress-text">
+                <span id="progressText">Step 1 of 8</span>
+            </div>
+        </div>
+
+        <form id="questionnaireForm">
+            <!-- Step 1: Business Overview -->
+            <div class="step active" data-step="1">
+                <div class="question-card">
+                    <label class="question-label">What's your name?<span class="required">*</span></label>
+                    <input type="text" name="owner_name" required>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">What's your business email?<span class="required">*</span></label>
+                    <p class="question-help">We'll send a copy of your responses here</p>
+                    <input type="email" name="owner_email" required>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">What type of service does your business provide?<span class="required">*</span></label>
+                    <p class="question-help">E.g., photography, consulting, salon services, equipment rental, etc.</p>
+                    <input type="text" name="business_type" required>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">How many people are involved in handling bookings?<span class="required">*</span></label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="team_size" value="just_me" required>
+                            <span>Just me</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="team_size" value="2-3">
+                            <span>2-3 people</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="team_size" value="4-5">
+                            <span>4-5 people</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="team_size" value="6+">
+                            <span>6+ people</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Communication Channels -->
+            <div class="step" data-step="2">
+                <div class="question-card">
+                    <label class="question-label">How do customers primarily contact you?<span class="required">*</span></label>
+                    <p class="question-help">Select all that apply</p>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="contact_channels" value="sms">
+                            <span>SMS/Text Messages</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="contact_channels" value="whatsapp">
+                            <span>WhatsApp</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="contact_channels" value="email">
+                            <span>Email</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="contact_channels" value="phone">
+                            <span>Phone Calls</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="contact_channels" value="social">
+                            <span>Social Media (Facebook, Instagram, etc.)</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="contact_channels" value="other">
+                            <span>Other</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">If "Other", please specify:</label>
+                    <input type="text" name="contact_channels_other">
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">Roughly how many booking inquiries do you receive per day?<span class="required">*</span></label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="daily_inquiries" value="1-5" required>
+                            <span>1-5 messages</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="daily_inquiries" value="6-10">
+                            <span>6-10 messages</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="daily_inquiries" value="11-20">
+                            <span>11-20 messages</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="daily_inquiries" value="21-50">
+                            <span>21-50 messages</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="daily_inquiries" value="50+">
+                            <span>50+ messages</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Current Time Investment -->
+            <div class="step" data-step="3">
+                <div class="question-card">
+                    <label class="question-label">On average, how much time do you spend per day managing bookings?<span class="required">*</span></label>
+                    <p class="question-help">Include: responding to messages, checking calendars, confirming appointments, negotiating times</p>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="daily_time" value="less_than_1" required>
+                            <span>Less than 1 hour</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="daily_time" value="1-2">
+                            <span>1-2 hours</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="daily_time" value="3-4">
+                            <span>3-4 hours</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="daily_time" value="5+">
+                            <span>5+ hours</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">What percentage of your working day is this?</label>
+                    <p class="question-help">Slide to estimate</p>
+                    <div class="slider-container">
+                        <input type="range" name="time_percentage" min="0" max="100" value="25" step="5">
+                        <div class="slider-value"><span id="timePercentageValue">25</span>%</div>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">What's the most time-consuming part of the booking process?<span class="required">*</span></label>
+                    <p class="question-help">Describe what takes up the most time</p>
+                    <textarea name="time_consuming_part" required></textarea>
+                </div>
+            </div>
+
+            <!-- Step 4: Calendar & Booking Process -->
+            <div class="step" data-step="4">
+                <div class="question-card">
+                    <label class="question-label">What calendar systems do you currently use?<span class="required">*</span></label>
+                    <p class="question-help">Select all that apply</p>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="calendar_systems" value="google_calendar">
+                            <span>Google Calendar</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="calendar_systems" value="apple_calendar">
+                            <span>Apple Calendar</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="calendar_systems" value="outlook">
+                            <span>Outlook/Microsoft Calendar</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="calendar_systems" value="paper">
+                            <span>Paper diary/planner</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="calendar_systems" value="booking_software">
+                            <span>Booking software (Calendly, Acuity, etc.)</span>
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="calendar_systems" value="other">
+                            <span>Other</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">If using booking software or "Other", please specify:</label>
+                    <input type="text" name="calendar_systems_other">
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">Do you manage multiple separate calendars?<span class="required">*</span></label>
+                    <p class="question-help">E.g., different calendars for different services, locations, or staff members</p>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="multiple_calendars" value="yes" required>
+                            <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="multiple_calendars" value="no">
+                            <span>No, just one calendar</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">If yes, please describe your calendar setup:</label>
+                    <p class="question-help">E.g., "One for each photographer", "Separate for studio and on-location", etc.</p>
+                    <textarea name="calendar_setup"></textarea>
+                </div>
+            </div>
+
+            <!-- Step 5: Customer Journey -->
+            <div class="step" data-step="5">
+                <div class="question-card">
+                    <label class="question-label">What's the ratio of new customers vs. returning customers?<span class="required">*</span></label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="customer_ratio" value="mostly_new" required>
+                            <span>Mostly new customers (80%+)</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="customer_ratio" value="balanced">
+                            <span>Balanced mix (50/50)</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="customer_ratio" value="mostly_returning">
+                            <span>Mostly returning customers (80%+)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">Walk us through a typical booking conversation from start to finish<span class="required">*</span></label>
+                    <p class="question-help">Include: initial message, what info you ask for, how you check availability, how you confirm</p>
+                    <textarea name="typical_conversation" required rows="6"></textarea>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">What information do you ALWAYS need from the customer to make a booking?<span class="required">*</span></label>
+                    <p class="question-help">E.g., name, date, time, service type, location, number of people, etc.</p>
+                    <textarea name="required_info" required></textarea>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">How often do you need to negotiate alternative dates/times when the customer's first choice isn't available?<span class="required">*</span></label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="negotiation_frequency" value="rarely" required>
+                            <span>Rarely (less than 20% of the time)</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="negotiation_frequency" value="sometimes">
+                            <span>Sometimes (20-50% of the time)</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="negotiation_frequency" value="often">
+                            <span>Often (50-80% of the time)</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="negotiation_frequency" value="very_often">
+                            <span>Very often (80%+ of the time)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 6: Pain Points -->
+            <div class="step" data-step="6">
+                <div class="question-card">
+                    <label class="question-label">What are the biggest frustrations with your current booking process?<span class="required">*</span></label>
+                    <p class="question-help">Be specific - what drives you crazy?</p>
+                    <textarea name="biggest_frustrations" required rows="5"></textarea>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">What happens when things go wrong?<span class="required">*</span></label>
+                    <p class="question-help">E.g., double bookings, missed messages, scheduling conflicts, no-shows</p>
+                    <textarea name="common_problems" required></textarea>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">Rate the following aspects of your current process</label>
+                    <p class="question-help">1 = Terrible, 5 = Excellent</p>
+                    
+                    <div style="margin-top: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--color-text-dim);">Response time to customers</label>
+                        <div class="slider-container">
+                            <input type="range" name="rating_response_time" min="1" max="5" value="3" step="1">
+                            <div class="slider-value"><span id="ratingResponseTime">3</span>/5</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--color-text-dim);">Calendar accuracy</label>
+                        <div class="slider-container">
+                            <input type="range" name="rating_calendar_accuracy" min="1" max="5" value="3" step="1">
+                            <div class="slider-value"><span id="ratingCalendarAccuracy">3</span>/5</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--color-text-dim);">Customer experience</label>
+                        <div class="slider-container">
+                            <input type="range" name="rating_customer_experience" min="1" max="5" value="3" step="1">
+                            <div class="slider-value"><span id="ratingCustomerExperience">3</span>/5</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--color-text-dim);">Your stress level managing bookings</label>
+                        <div class="slider-container">
+                            <input type="range" name="rating_stress_level" min="1" max="5" value="3" step="1">
+                            <div class="slider-value"><span id="ratingStressLevel">3</span>/5</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 7: Vision & Must-Haves -->
+            <div class="step" data-step="7">
+                <div class="question-card">
+                    <label class="question-label">Describe "amazing" - what would the perfect automated booking system look like for you?<span class="required">*</span></label>
+                    <p class="question-help">Dream big! What would make you go "wow, this changes everything"?</p>
+                    <textarea name="vision_amazing" required rows="6"></textarea>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">What features are ABSOLUTE MUST-HAVES?<span class="required">*</span></label>
+                    <p class="question-help">What features would make or break this for you? Deal-breakers?</p>
+                    <textarea name="must_have_features" required rows="5"></textarea>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">What would be nice to have, but not essential?</label>
+                    <p class="question-help">Features that would be great bonuses</p>
+                    <textarea name="nice_to_have_features" rows="5"></textarea>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">How much time would you like to save each week?<span class="required">*</span></label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="time_savings_goal" value="2-5" required>
+                            <span>2-5 hours per week</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="time_savings_goal" value="5-10">
+                            <span>5-10 hours per week</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="time_savings_goal" value="10-20">
+                            <span>10-20 hours per week</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="time_savings_goal" value="20+">
+                            <span>20+ hours per week</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 8: Technical & Final -->
+            <div class="step" data-step="8">
+                <div class="question-card">
+                    <label class="question-label">What tools/software do you currently use in your business?</label>
+                    <p class="question-help">E.g., scheduling apps, CRM, payment processors, communication tools</p>
+                    <textarea name="current_tools" rows="4"></textarea>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">How comfortable are you with technology?<span class="required">*</span></label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="tech_comfort" value="not_comfortable" required>
+                            <span>Not very comfortable - I prefer simple solutions</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="tech_comfort" value="somewhat">
+                            <span>Somewhat comfortable - I can figure things out</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="tech_comfort" value="very">
+                            <span>Very comfortable - I'm tech-savvy</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">Is there anything else you'd like us to know?</label>
+                    <p class="question-help">Any special requirements, concerns, or ideas you haven't mentioned</p>
+                    <textarea name="additional_info" rows="5"></textarea>
+                </div>
+
+                <div class="question-card">
+                    <label class="question-label">When would you ideally like to have this system in place?<span class="required">*</span></label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="timeline" value="asap" required>
+                            <span>ASAP - this is urgent</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="timeline" value="1-3_months">
+                            <span>Within 1-3 months</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="timeline" value="3-6_months">
+                            <span>Within 3-6 months</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="timeline" value="6+_months">
+                            <span>6+ months - just exploring</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Step -->
+            <div class="step" data-step="9">
+                <div class="summary-section">
+                    <h3>📋 Review Your Responses</h3>
+                    <div id="summaryContent"></div>
+                </div>
+            </div>
+
+            <!-- Success Step -->
+            <div class="step" data-step="10">
+                <div class="success-message">
+                    <div class="success-icon">🎉</div>
+                    <h2 style="color: var(--color-primary); margin-bottom: 15px;">Thank You!</h2>
+                    <p style="color: var(--color-text-dim); font-size: 1.1rem;">Your responses have been submitted successfully.</p>
+                    <p style="color: var(--color-text-dim); margin-top: 10px;">We'll review your information and be in touch soon.</p>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn-secondary" id="prevBtn" style="display: none;">← Previous</button>
+                <button type="button" class="btn-primary" id="nextBtn">Next →</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 8; // Not counting summary and success
+        const form = document.getElementById('questionnaireForm');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+
+        // Initialize slider displays
+        function initializeSliders() {
+            const sliders = document.querySelectorAll('input[type="range"]');
+            sliders.forEach(slider => {
+                const valueDisplay = slider.parentElement.querySelector('.slider-value span');
+                if (valueDisplay) {
+                    slider.addEventListener('input', function() {
+                        valueDisplay.textContent = this.value;
+                    });
+                }
+            });
+        }
+
+        // Initialize radio/checkbox selection highlighting
+        function initializeSelections() {
+            document.querySelectorAll('.radio-option, .checkbox-option').forEach(option => {
+                const input = option.querySelector('input');
+                input.addEventListener('change', function() {
+                    if (this.type === 'radio') {
+                        option.closest('.radio-group, .checkbox-group').querySelectorAll('.radio-option, .checkbox-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                    }
+                    if (this.checked) {
+                        option.classList.add('selected');
+                    } else {
+                        option.classList.remove('selected');
+                    }
+                });
+            });
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            progressBar.style.width = progress + '%';
+            progressText.textContent = `Step ${currentStep} of ${totalSteps}`;
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            const stepElement = document.querySelector(`.step[data-step="${step}"]`);
+            if (stepElement) {
+                stepElement.classList.add('active');
+            }
+
+            prevBtn.style.display = step > 1 ? 'block' : 'none';
+            
+            if (step === 9) {
+                nextBtn.textContent = 'Submit ✓';
+                generateSummary();
+            } else if (step === 10) {
+                nextBtn.style.display = 'none';
+                prevBtn.style.display = 'none';
+            } else {
+                nextBtn.textContent = 'Next →';
+            }
+
+            updateProgress();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function validateStep(step) {
+            const stepElement = document.querySelector(`.step[data-step="${step}"]`);
+            const requiredInputs = stepElement.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredInputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    const checkboxGroup = input.closest('.checkbox-group');
+                    const anyChecked = checkboxGroup.querySelector('input[type="checkbox"]:checked');
+                    if (!anyChecked) {
+                        isValid = false;
+                    }
+                } else if (input.type === 'radio') {
+                    const radioGroup = stepElement.querySelector(`input[name="${input.name}"]:checked`);
+                    if (!radioGroup) {
+                        isValid = false;
+                    }
+                } else if (!input.value.trim()) {
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
+
+        function generateSummary() {
+            const formData = new FormData(form);
+            const summaryContent = document.getElementById('summaryContent');
+            let html = '';
+
+            const sections = [
+                {
+                    title: 'Business Information',
+                    fields: ['owner_name', 'owner_email', 'business_type', 'team_size']
+                },
+                {
+                    title: 'Communication',
+                    fields: ['contact_channels', 'daily_inquiries']
+                },
+                {
+                    title: 'Time Investment',
+                    fields: ['daily_time', 'time_percentage', 'time_consuming_part']
+                },
+                {
+                    title: 'Calendar & Process',
+                    fields: ['calendar_systems', 'multiple_calendars', 'customer_ratio']
+                },
+                {
+                    title: 'Goals & Vision',
+                    fields: ['vision_amazing', 'must_have_features', 'time_savings_goal', 'timeline']
+                }
+            ];
+
+            const fieldLabels = {
+                owner_name: 'Name',
+                owner_email: 'Email',
+                business_type: 'Business Type',
+                team_size: 'Team Size',
+                contact_channels: 'Contact Channels',
+                daily_inquiries: 'Daily Inquiries',
+                daily_time: 'Daily Time Spent',
+                time_percentage: 'Percentage of Day',
+                time_consuming_part: 'Most Time-Consuming',
+                calendar_systems: 'Calendar Systems',
+                multiple_calendars: 'Multiple Calendars',
+                customer_ratio: 'Customer Ratio',
+                vision_amazing: 'Vision of "Amazing"',
+                must_have_features: 'Must-Have Features',
+                time_savings_goal: 'Time Savings Goal',
+                timeline: 'Desired Timeline'
+            };
+
+            sections.forEach(section => {
+                html += `<div class="summary-item"><strong style="font-size: 1.1rem; color: var(--color-primary);">${section.title}</strong></div>`;
+                section.fields.forEach(field => {
+                    const values = formData.getAll(field);
+                    if (values.length > 0 && values[0] !== '') {
+                        const displayValue = values.length > 1 ? values.join(', ') : values[0];
+                        html += `
+                            <div class="summary-item">
+                                <strong>${fieldLabels[field] || field}</strong>
+                                <span>${displayValue}</span>
+                            </div>
+                        `;
+                    }
+                });
+            });
+
+            summaryContent.innerHTML = html;
+        }
+
+        async function submitForm() {
+            const formData = new FormData(form);
+            const data = {};
+            
+            formData.forEach((value, key) => {
+                if (data[key]) {
+                    if (Array.isArray(data[key])) {
+                        data[key].push(value);
+                    } else {
+                        data[key] = [data[key], value];
+                    }
+                } else {
+                    data[key] = value;
+                }
+            });
+
+            // Format email body
+            let emailBody = 'Business Workflow Discovery Questionnaire\n\n';
+            emailBody += '='.repeat(50) + '\n\n';
+            
+            emailBody += 'BUSINESS INFORMATION\n';
+            emailBody += '-'.repeat(50) + '\n';
+            emailBody += `Name: ${data.owner_name}\n`;
+            emailBody += `Email: ${data.owner_email}\n`;
+            emailBody += `Business Type: ${data.business_type}\n`;
+            emailBody += `Team Size: ${data.team_size}\n\n`;
+
+            emailBody += 'COMMUNICATION CHANNELS\n';
+            emailBody += '-'.repeat(50) + '\n';
+            emailBody += `Contact Channels: ${Array.isArray(data.contact_channels) ? data.contact_channels.join(', ') : data.contact_channels}\n`;
+            if (data.contact_channels_other) emailBody += `Other Channels: ${data.contact_channels_other}\n`;
+            emailBody += `Daily Inquiries: ${data.daily_inquiries}\n\n`;
+
+            emailBody += 'TIME INVESTMENT\n';
+            emailBody += '-'.repeat(50) + '\n';
+            emailBody += `Daily Time: ${data.daily_time}\n`;
+            emailBody += `Percentage of Day: ${data.time_percentage}%\n`;
+            emailBody += `Most Time-Consuming: ${data.time_consuming_part}\n\n`;
+
+            emailBody += 'CALENDAR & BOOKING PROCESS\n';
+            emailBody += '-'.repeat(50) + '\n';
+            emailBody += `Calendar Systems: ${Array.isArray(data.calendar_systems) ? data.calendar_systems.join(', ') : data.calendar_systems}\n`;
+            if (data.calendar_systems_other) emailBody += `Other Systems: ${data.calendar_systems_other}\n`;
+            emailBody += `Multiple Calendars: ${data.multiple_calendars}\n`;
+            if (data.calendar_setup) emailBody += `Calendar Setup: ${data.calendar_setup}\n\n`;
+
+            emailBody += 'CUSTOMER JOURNEY\n';
+            emailBody += '-'.repeat(50) + '\n';
+            emailBody += `Customer Ratio: ${data.customer_ratio}\n`;
+            emailBody += `Typical Conversation: ${data.typical_conversation}\n`;
+            emailBody += `Required Info: ${data.required_info}\n`;
+            emailBody += `Negotiation Frequency: ${data.negotiation_frequency}\n\n`;
+
+            emailBody += 'PAIN POINTS\n';
+            emailBody += '-'.repeat(50) + '\n';
+            emailBody += `Biggest Frustrations: ${data.biggest_frustrations}\n`;
+            emailBody += `Common Problems: ${data.common_problems}\n`;
+            emailBody += `Response Time Rating: ${data.rating_response_time}/5\n`;
+            emailBody += `Calendar Accuracy Rating: ${data.rating_calendar_accuracy}/5\n`;
+            emailBody += `Customer Experience Rating: ${data.rating_customer_experience}/5\n`;
+            emailBody += `Stress Level Rating: ${data.rating_stress_level}/5\n\n`;
+
+            emailBody += 'VISION & GOALS\n';
+            emailBody += '-'.repeat(50) + '\n';
+            emailBody += `Vision of "Amazing": ${data.vision_amazing}\n`;
+            emailBody += `Must-Have Features: ${data.must_have_features}\n`;
+            if (data.nice_to_have_features) emailBody += `Nice-to-Have Features: ${data.nice_to_have_features}\n`;
+            emailBody += `Time Savings Goal: ${data.time_savings_goal}\n\n`;
+
+            emailBody += 'TECHNICAL CONTEXT\n';
+            emailBody += '-'.repeat(50) + '\n';
+            if (data.current_tools) emailBody += `Current Tools: ${data.current_tools}\n`;
+            emailBody += `Tech Comfort: ${data.tech_comfort}\n`;
+            if (data.additional_info) emailBody += `Additional Info: ${data.additional_info}\n`;
+            emailBody += `Timeline: ${data.timeline}\n`;
+
+            // Create mailto link
+            const subject = `Business Workflow Questionnaire - ${data.owner_name}`;
+            const mailtoLink = `mailto:${data.owner_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+            
+            // Open email client
+            window.location.href = mailtoLink;
+            
+            // Show success
+            currentStep = 10;
+            showStep(currentStep);
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep === 9) {
+                // Submit
+                submitForm();
+            } else if (currentStep < totalSteps) {
+                if (validateStep(currentStep)) {
+                    currentStep++;
+                    showStep(currentStep);
+                } else {
+                    alert('Please fill in all required fields before continuing.');
+                }
+            } else if (currentStep === totalSteps) {
+                currentStep = 9; // Go to summary
+                showStep(currentStep);
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+
+        // Initialize
+        initializeSliders();
+        initializeSelections();
+        updateProgress();
+    </script>
+</body>
+</html>
