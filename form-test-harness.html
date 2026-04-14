@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Test Harness // AI Controlled</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --surface: #0f1520;
+    --surface2: #162030;
+    --border: #1e2d3d;
+    --primary: #00e5ff;
+    --success: #00ff88;
+    --warning: #ffcc00;
+    --danger: #ff3366;
+    --text: #cdd9e5;
+    --text-dim: #5a7a8a;
+    --font-ui: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 0% 0%, rgba(0,229,255,0.05) 0%, transparent 55%),
+      radial-gradient(ellipse at 100% 100%, rgba(0,255,136,0.04) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 24px 20px; position: relative; z-index: 1; }
+
+  /* ─── HEADER ─── */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header-left h1 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--primary);
+    line-height: 1.1;
+  }
+  .header-left p {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    margin-top: 5px;
+    letter-spacing: 0.08em;
+  }
+  .version-badge {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    padding: 3px 8px;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    opacity: 0.7;
+    white-space: nowrap;
+    align-self: flex-start;
+  }
+
+  /* ─── PANELS ─── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+  }
+  .panel-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .panel-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+    opacity: 0.6;
+    flex-shrink: 0;
+  }
+  .panel-body { padding: 20px; }
+
+  /* ─── FORM CONTROLS ─── */
+  .config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 600px) { .config-grid { grid-template-columns: 1fr; } }
+
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-group.full { grid-column: 1 / -1; }
+  label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  input[type="text"], input[type="number"], input[type="url"], select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 9px 12px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  input:focus, select:focus { border-color: var(--primary); }
+  select option { background: var(--surface); }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-label { font-size: 0.82rem; color: var(--text); }
+  .toggle-desc { font-size: 0.68rem; color: var(--text-dim); margin-top: 2px; font-family: var(--font-mono); }
+  .toggle {
+    position: relative; width: 40px; height: 22px; flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0; cursor: pointer;
+    background: var(--border); border-radius: 22px;
+    transition: 0.3s;
+  }
+  .slider:before {
+    content: ''; position: absolute;
+    width: 16px; height: 16px;
+    left: 3px; top: 3px;
+    background: var(--text-dim); border-radius: 50%;
+    transition: 0.3s;
+  }
+  .toggle input:checked + .slider { background: var(--primary); }
+  .toggle input:checked + .slider:before {
+    transform: translateX(18px);
+    background: var(--bg);
+  }
+
+  /* ─── RUN BUTTON ─── */
+  #run-btn {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  #run-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--primary);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s;
+    z-index: -1;
+  }
+  #run-btn:hover { color: var(--bg); }
+  #run-btn:hover::before { transform: scaleX(1); }
+  #run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  #run-btn:disabled:hover { color: var(--primary); }
+  #run-btn:disabled:hover::before { transform: scaleX(0); }
+
+  /* ─── PROGRESS ─── */
+  #progress-panel { display: none; }
+  .progress-bar-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    height: 4px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .log-container {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    line-height: 1.8;
+  }
+  .log-entry { display: flex; gap: 10px; }
+  .log-time { color: var(--text-dim); flex-shrink: 0; }
+  .log-ok { color: var(--success); }
+  .log-warn { color: var(--warning); }
+  .log-err { color: var(--danger); }
+  .log-info { color: var(--primary); }
+
+  /* ─── SUMMARY STATS ─── */
+  #results-panel { display: none; }
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 600px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label { font-size: 0.62rem; color: var(--text-dim); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; }
+  .stat-pass .stat-num { color: var(--success); }
+  .stat-fail .stat-num { color: var(--danger); }
+  .stat-warn .stat-num { color: var(--warning); }
+  .stat-total .stat-num { color: var(--primary); }
+
+  /* ─── AI SUMMARY ─── */
+  .ai-summary {
+    background: var(--bg);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-left: 3px solid var(--primary);
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 24px;
+    font-size: 0.82rem;
+    line-height: 1.7;
+  }
+  .ai-summary-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--primary);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ─── TEST CARDS ─── */
+  .test-list { display: flex; flex-direction: column; gap: 10px; }
+  .test-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .test-card-header {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .test-card-header:hover { background: var(--surface); }
+  .test-status {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    padding: 3px 7px;
+    border-radius: 2px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+  .status-pass { background: rgba(0,255,136,0.1); color: var(--success); border: 1px solid rgba(0,255,136,0.3); }
+  .status-fail { background: rgba(255,51,102,0.1); color: var(--danger); border: 1px solid rgba(255,51,102,0.3); }
+  .status-warn { background: rgba(255,204,0,0.1); color: var(--warning); border: 1px solid rgba(255,204,0,0.3); }
+  .test-card-name { font-size: 0.85rem; font-weight: 600; flex: 1; }
+  .test-card-type { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-dim); }
+  .chevron { color: var(--text-dim); font-size: 0.8rem; transition: transform 0.2s; flex-shrink: 0; }
+  .test-card.open .chevron { transform: rotate(180deg); }
+
+  .test-card-body { display: none; border-top: 1px solid var(--border); }
+  .test-card.open .test-card-body { display: block; }
+
+  .test-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  @media (max-width: 620px) { .test-sections { grid-template-columns: 1fr; } }
+  .test-section { padding: 16px; border-right: 1px solid var(--border); }
+  .test-section:last-child { border-right: none; }
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .field-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.74rem;
+    align-items: flex-start;
+  }
+  .field-row:last-child { border-bottom: none; }
+  .field-name { color: var(--text-dim); font-family: var(--font-mono); font-size: 0.65rem; flex-shrink: 0; max-width: 40%; }
+  .field-val { text-align: right; word-break: break-word; max-width: 58%; }
+  .field-ok { color: var(--success); }
+  .field-fail { color: var(--danger); }
+  .field-miss { color: var(--text-dim); font-style: italic; font-size: 0.68rem; }
+
+  .integrity-section { padding: 16px; border-top: 1px solid var(--border); grid-column: 1 / -1; }
+  .integrity-result {
+    font-size: 0.78rem;
+    line-height: 1.6;
+    padding: 12px;
+    background: var(--surface);
+    border-radius: 4px;
+    border-left: 3px solid var(--border);
+  }
+  .integrity-pass { border-left-color: var(--success); }
+  .integrity-fail { border-left-color: var(--danger); }
+  .integrity-warn { border-left-color: var(--warning); }
+
+  .checks-list { display: flex; flex-direction: column; gap: 4px; }
+  .check-item {
+    display: flex;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    padding: 4px 0;
+  }
+  .check-icon { flex-shrink: 0; }
+  .check-ok .check-icon { color: var(--success); }
+  .check-fail .check-icon { color: var(--danger); }
+  .check-warn .check-icon { color: var(--warning); }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ─── SPINNER ─── */
+  .spinner {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border: 2px solid rgba(0,229,255,0.2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    padding: 2px 6px;
+    border-radius: 2px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    color: var(--primary);
+    letter-spacing: 0.05em;
+    margin-right: 4px;
+    margin-bottom: 2px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Form Test Harness</h1>
+      <p>// AI-CONTROLLED INPUT AUTOMATION · BOOKING DISCOVERY QUESTIONNAIRE</p>
+    </div>
+    <div class="version-badge">v1.0 // HARNESS</div>
+  </div>
+
+  <!-- CONFIG PANEL -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-dot"></div>
+      <div class="panel-title">Configuration</div>
+    </div>
+    <div class="panel-body">
+      <div class="config-grid">
+        <div class="field-group">
+          <label>Formspree Endpoint URL</label>
+          <input type="url" id="formspree-url" placeholder="https://formspree.io/f/xxxxxxxx" />
+        </div>
+        <div class="field-group">
+          <label>Number of Test Scenarios</label>
+          <select id="test-count">
+            <option value="3">3 scenarios</option>
+            <option value="5" selected>5 scenarios</option>
+            <option value="8">8 scenarios</option>
+            <option value="10">10 scenarios</option>
+          </select>
+        </div>
+        <div class="field-group full">
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Mock Submit (Recommended)</div>
+              <div class="toggle-desc">Capture payload without hitting Formspree. Saves quota.</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="mock-mode" checked><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">AI Integrity Check</div>
+              <div class="toggle-desc">Use Claude to verify input → payload accuracy for each test.</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="ai-integrity" checked><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Include Edge Cases</div>
+              <div class="toggle-desc">Add scenarios with long inputs, special chars, minimal answers.</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="edge-cases" checked><span class="slider"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RUN BUTTON -->
+  <button id="run-btn" onclick="runTests()">▶ Run Automated Test Suite</button>
+
+  <!-- PROGRESS PANEL -->
+  <div class="panel" id="progress-panel" style="margin-top:20px;">
+    <div class="panel-header">
+      <div class="panel-dot" style="background:var(--warning);"></div>
+      <div class="panel-title" id="progress-title">Running Tests...</div>
+    </div>
+    <div class="panel-body">
+      <div class="progress-bar-wrap"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="log-container" id="log-container"></div>
+    </div>
+  </div>
+
+  <!-- RESULTS PANEL -->
+  <div id="results-panel">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-dot" style="background:var(--success);"></div>
+        <div class="panel-title">Results Summary</div>
+      </div>
+      <div class="panel-body">
+        <div class="stats-row" id="stats-row"></div>
+        <div class="ai-summary" id="ai-summary" style="display:none;">
+          <div class="ai-summary-label">✦ AI Analysis</div>
+          <div id="ai-summary-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-dot"></div>
+        <div class="panel-title">Test Scenarios</div>
+      </div>
+      <div class="panel-body">
+        <div class="test-list" id="test-list"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// FORM FIELD CONFIGURATION
+// Maps the questionnaire's field names to human-readable labels,
+// expected types, and validation rules. Update if fields change.
+// ══════════════════════════════════════════════════════════════
+const FORM_CONFIG = {
+  fields: [
+    { name: 'owner_name',         label: 'Owner Name',           type: 'text',     required: true },
+    { name: 'owner_email',        label: 'Email',                type: 'email',    required: true },
+    { name: 'business_type',      label: 'Business Type',        type: 'text',     required: true },
+    { name: 'team_size',          label: 'Team Size',            type: 'select',   required: true },
+    { name: 'contact_channels',   label: 'Contact Channels',     type: 'array',    required: true },
+    { name: 'daily_inquiries',    label: 'Daily Inquiries',      type: 'select',   required: true },
+    { name: 'daily_time',         label: 'Daily Time Spent',     type: 'select',   required: false },
+    { name: 'time_percentage',    label: '% of Day',             type: 'select',   required: false },
+    { name: 'time_consuming_part',label: 'Biggest Bottleneck',   type: 'textarea', required: false },
+    { name: 'calendar_systems',   label: 'Calendar Systems',     type: 'array',    required: false },
+    { name: 'multiple_calendars', label: 'Multiple Calendars',   type: 'select',   required: false },
+    { name: 'customer_ratio',     label: 'Customer Ratio',       type: 'select',   required: false },
+    { name: 'vision_amazing',     label: 'Vision of Amazing',    type: 'textarea', required: false },
+    { name: 'must_have_features', label: 'Must-Have Features',   type: 'textarea', required: false },
+    { name: 'time_savings_goal',  label: 'Time Savings Goal',    type: 'select',   required: false },
+    { name: 'timeline',           label: 'Desired Timeline',     type: 'select',   required: false },
+  ],
+  requiredFields: ['owner_name','owner_email','business_type','team_size','contact_channels','daily_inquiries'],
+};
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let testResults = [];
+let logEl;
+
+// ══════════════════════════════════════════════════════════════
+// LOGGING
+// ══════════════════════════════════════════════════════════════
+function log(msg, type = 'info') {
+  if (!logEl) logEl = document.getElementById('log-container');
+  const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+  const div = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `<span class="log-time">${time}</span><span class="log-${type}">${msg}</span>`;
+  logEl.appendChild(div);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function setProgress(pct, label) {
+  document.getElementById('progress-fill').style.width = pct + '%';
+  if (label) document.getElementById('progress-title').textContent = label;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ANTHROPIC API CALL
+// ══════════════════════════════════════════════════════════════
+async function callClaude(systemPrompt, userMessage, maxTokens = 1000) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+    }),
+  });
+  if (!response.ok) throw new Error(`API error: ${response.status}`);
+  const data = await response.json();
+  return data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// SCENARIO GENERATION
+// ══════════════════════════════════════════════════════════════
+async function generateScenarios(count, includeEdgeCases) {
+  const systemPrompt = `You generate realistic test data for a business workflow discovery questionnaire. 
+Return ONLY a valid JSON array. No markdown, no backticks, no explanation. 
+Each object must have these exact keys: owner_name, owner_email, business_type, team_size, 
+contact_channels (array), daily_inquiries, daily_time, time_percentage, time_consuming_part, 
+calendar_systems (array), multiple_calendars, customer_ratio, vision_amazing, must_have_features,
+time_savings_goal, timeline.
+
+Valid values:
+- team_size: "just-me" | "2-3" | "4-10" | "10+"
+- contact_channels: array from ["sms","whatsapp","email","phone","instagram","facebook","other"]
+- daily_inquiries: "1-5" | "6-15" | "16-30" | "30+"
+- daily_time: "under-30" | "30-60" | "1-2hrs" | "2-3hrs" | "3hrs+"
+- time_percentage: "under-10" | "10-25" | "25-50" | "50-75" | "75+"
+- calendar_systems: array from ["google","apple","outlook","paper","other"]
+- multiple_calendars: "yes-personal" | "yes-staff" | "yes-clients" | "no"
+- customer_ratio: "mostly-new" | "mostly-returning" | "even-split"
+- time_savings_goal: "1-2hrs" | "2-4hrs" | "4-6hrs" | "most-of-it"
+- timeline: "asap" | "1-3months" | "3-6months" | "flexible"`;
+
+  const edgeCaseInstruction = includeEdgeCases ? `
+Include at least 1 edge case scenario with: very long text in free-text fields (200+ chars),
+special characters (apostrophes, &, <, >, quotes) in text fields, and minimal required-only answers.` : '';
+
+  const userMsg = `Generate ${count} diverse test scenarios for a booking/service business questionnaire.
+Vary: business types (photography, dog grooming, personal training, hair salon, music lessons, etc.),
+team sizes, tech comfort levels, volume ranges, and pain point descriptions.
+Make text fields realistic and varied. ${edgeCaseInstruction}
+Return the array only.`;
+
+  const raw = await callClaude(systemPrompt, userMsg, 2000);
+  
+  // Strip any accidental markdown fences
+  const cleaned = raw.replace(/```json|```/g, '').trim();
+  return JSON.parse(cleaned);
+}
+
+// ══════════════════════════════════════════════════════════════
+// PAYLOAD BUILDER
+// Replicates exactly what the form builds before sending to Formspree
+// ══════════════════════════════════════════════════════════════
+function buildPayload(scenario) {
+  const payload = {};
+  for (const field of FORM_CONFIG.fields) {
+    const val = scenario[field.name];
+    if (val !== undefined && val !== null && val !== '') {
+      if (Array.isArray(val)) {
+        payload[field.name] = val.join(', ');
+      } else {
+        payload[field.name] = String(val);
+      }
+    }
+  }
+  return payload;
+}
+
+// ══════════════════════════════════════════════════════════════
+// VALIDATION SUITE
+// ══════════════════════════════════════════════════════════════
+function runValidation(scenario, payload) {
+  const checks = [];
+
+  // Required fields present
+  for (const fieldName of FORM_CONFIG.requiredFields) {
+    const inPayload = payload[fieldName] && payload[fieldName].trim() !== '';
+    checks.push({
+      id: `required_${fieldName}`,
+      label: `Required: ${fieldName}`,
+      pass: inPayload,
+      detail: inPayload ? payload[fieldName] : 'MISSING',
+    });
+  }
+
+  // Email format
+  const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailOk = payload.owner_email && emailRx.test(payload.owner_email);
+  checks.push({
+    id: 'email_format',
+    label: 'Email format valid',
+    pass: emailOk,
+    detail: payload.owner_email || 'MISSING',
+  });
+
+  // Arrays serialised (contact_channels)
+  const chOriginal = scenario.contact_channels;
+  const chPayload = payload.contact_channels;
+  if (chOriginal && Array.isArray(chOriginal)) {
+    const allPresent = chOriginal.every(ch => chPayload && chPayload.includes(ch));
+    checks.push({
+      id: 'array_channels',
+      label: 'Contact channels serialised',
+      pass: allPresent,
+      detail: `Expected: ${chOriginal.join(', ')} → Got: ${chPayload || 'MISSING'}`,
+    });
+  }
+
+  // Calendar arrays serialised
+  const calOriginal = scenario.calendar_systems;
+  if (calOriginal && Array.isArray(calOriginal) && calOriginal.length > 0) {
+    const calPayload = payload.calendar_systems;
+    const allCal = calOriginal.every(c => calPayload && calPayload.includes(c));
+    checks.push({
+      id: 'array_calendars',
+      label: 'Calendar systems serialised',
+      pass: allCal,
+      detail: `Expected: ${calOriginal.join(', ')} → Got: ${calPayload || 'MISSING'}`,
+    });
+  }
+
+  // Special characters preserved
+  const textFields = ['owner_name', 'business_type', 'time_consuming_part', 'vision_amazing', 'must_have_features'];
+  for (const f of textFields) {
+    if (scenario[f] && payload[f]) {
+      const originalStr = String(scenario[f]);
+      const payloadStr = String(payload[f]);
+      const preserved = originalStr === payloadStr;
+      if (originalStr !== payloadStr) {
+        checks.push({
+          id: `chars_${f}`,
+          label: `Chars preserved: ${f}`,
+          pass: false,
+          detail: `MISMATCH — in: "${originalStr.slice(0,40)}" → out: "${payloadStr.slice(0,40)}"`,
+        });
+      }
+    }
+  }
+
+  // No extra undeclared fields
+  const declaredNames = FORM_CONFIG.fields.map(f => f.name);
+  const extraKeys = Object.keys(payload).filter(k => !declaredNames.includes(k));
+  if (extraKeys.length > 0) {
+    checks.push({
+      id: 'no_extra_fields',
+      label: 'No undeclared fields',
+      pass: false,
+      detail: `Unexpected keys: ${extraKeys.join(', ')}`,
+    });
+  } else {
+    checks.push({ id: 'no_extra_fields', label: 'No undeclared fields', pass: true, detail: 'Clean' });
+  }
+
+  // Field count sanity
+  const requiredCount = FORM_CONFIG.requiredFields.length;
+  const payloadCount = Object.keys(payload).length;
+  checks.push({
+    id: 'field_count',
+    label: `Payload field count (≥${requiredCount})`,
+    pass: payloadCount >= requiredCount,
+    detail: `${payloadCount} fields in payload`,
+  });
+
+  const passed = checks.filter(c => c.pass).length;
+  const failed = checks.filter(c => !c.pass).length;
+  return { checks, passed, failed, total: checks.length };
+}
+
+// ══════════════════════════════════════════════════════════════
+// MOCK / REAL SUBMIT
+// ══════════════════════════════════════════════════════════════
+async function submitPayload(payload, endpoint, mockMode) {
+  if (mockMode) {
+    // Simulate network delay
+    await new Promise(r => setTimeout(r, 120 + Math.random() * 200));
+    return { ok: true, status: 200, mock: true };
+  }
+
+  if (!endpoint || !endpoint.includes('formspree.io')) {
+    return { ok: false, status: 0, error: 'No valid Formspree endpoint configured' };
+  }
+
+  try {
+    const formData = new FormData();
+    for (const [k, v] of Object.entries(payload)) {
+      formData.append(k, v);
+    }
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      body: formData,
+      headers: { Accept: 'application/json' },
+    });
+    return { ok: res.ok, status: res.status, mock: false };
+  } catch (err) {
+    return { ok: false, status: 0, error: err.message };
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// AI INTEGRITY CHECK
+// ══════════════════════════════════════════════════════════════
+async function aiIntegrityCheck(scenario, payload) {
+  const systemPrompt = `You are a data integrity auditor. Compare form input data (original scenario) 
+to submitted payload. Return ONLY JSON with keys: pass (boolean), issues (array of strings), 
+summary (1-2 sentence string). No markdown fences.`;
+
+  const userMsg = `INPUT SCENARIO:
+${JSON.stringify(scenario, null, 2)}
+
+SUBMITTED PAYLOAD:
+${JSON.stringify(payload, null, 2)}
+
+Check: data completeness, value preservation, array serialisation, special character handling.
+Return JSON only.`;
+
+  const raw = await callClaude(systemPrompt, userMsg, 400);
+  const cleaned = raw.replace(/```json|```/g, '').trim();
+  return JSON.parse(cleaned);
+}
+
+// ══════════════════════════════════════════════════════════════
+// OVERALL AI SUMMARY
+// ══════════════════════════════════════════════════════════════
+async function generateOverallSummary(results) {
+  const systemPrompt = `You are a QA report writer. Given test results, write a concise 2-3 sentence 
+plain English summary for a non-technical business owner. Highlight any patterns in failures or 
+issues worth investigating. Be direct and actionable.`;
+
+  const summaryData = results.map(r => ({
+    scenario: r.scenario.business_type,
+    validationPass: r.validation.failed === 0,
+    submitOk: r.submitResult.ok,
+    aiPass: r.aiCheck ? r.aiCheck.pass : null,
+    aiIssues: r.aiCheck ? r.aiCheck.issues : [],
+  }));
+
+  const raw = await callClaude(systemPrompt,
+    `Test results: ${JSON.stringify(summaryData)}`, 300);
+  return raw;
+}
+
+// ══════════════════════════════════════════════════════════════
+// MAIN ORCHESTRATOR
+// ══════════════════════════════════════════════════════════════
+async function runTests() {
+  const btn = document.getElementById('run-btn');
+  const endpoint = document.getElementById('formspree-url').value.trim();
+  const count = parseInt(document.getElementById('test-count').value);
+  const mockMode = document.getElementById('mock-mode').checked;
+  const aiIntegrity = document.getElementById('ai-integrity').checked;
+  const edgeCases = document.getElementById('edge-cases').checked;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Running...';
+  testResults = [];
+
+  document.getElementById('progress-panel').style.display = 'block';
+  document.getElementById('results-panel').style.display = 'none';
+  document.getElementById('log-container').innerHTML = '';
+  setProgress(0, 'Initialising...');
+
+  log('Test harness started', 'info');
+  log(`Mode: ${mockMode ? 'MOCK (no real submissions)' : 'LIVE (real Formspree)'}`, 'info');
+  log(`Scenarios: ${count} | AI integrity: ${aiIntegrity} | Edge cases: ${edgeCases}`, 'info');
+
+  let scenarios;
+  try {
+    log('Calling Claude API to generate test scenarios...', 'info');
+    setProgress(5, 'Generating test data...');
+    scenarios = await generateScenarios(count, edgeCases);
+    log(`✓ Generated ${scenarios.length} scenarios`, 'ok');
+    setProgress(15, 'Scenarios ready');
+  } catch (err) {
+    log(`✗ Scenario generation failed: ${err.message}`, 'err');
+    btn.disabled = false;
+    btn.innerHTML = '▶ Run Automated Test Suite';
+    return;
+  }
+
+  const progressStep = 70 / scenarios.length;
+
+  for (let i = 0; i < scenarios.length; i++) {
+    const scenario = scenarios[i];
+    const testNum = i + 1;
+    const result = { scenario, index: testNum };
+
+    log(`─── Test ${testNum}/${scenarios.length}: ${scenario.owner_name} (${scenario.business_type})`, 'info');
+    setProgress(15 + i * progressStep, `Running test ${testNum}/${scenarios.length}...`);
+
+    // Build payload
+    const payload = buildPayload(scenario);
+    result.payload = payload;
+    log(`  · Built payload (${Object.keys(payload).length} fields)`, 'ok');
+
+    // Validation
+    const validation = runValidation(scenario, payload);
+    result.validation = validation;
+    if (validation.failed === 0) {
+      log(`  · Validation: ${validation.passed}/${validation.total} checks passed`, 'ok');
+    } else {
+      log(`  · Validation: ${validation.failed} check(s) FAILED`, 'err');
+    }
+
+    // Submit
+    const submitResult = await submitPayload(payload, endpoint, mockMode);
+    result.submitResult = submitResult;
+    if (submitResult.ok) {
+      log(`  · Submit: ${submitResult.mock ? 'MOCK OK' : 'HTTP ' + submitResult.status}`, 'ok');
+    } else {
+      log(`  · Submit: FAILED (${submitResult.error || 'HTTP ' + submitResult.status})`, 'err');
+    }
+
+    // AI Integrity Check
+    if (aiIntegrity) {
+      try {
+        log(`  · Running AI integrity check...`, 'info');
+        const aiCheck = await aiIntegrityCheck(scenario, payload);
+        result.aiCheck = aiCheck;
+        log(`  · AI: ${aiCheck.pass ? 'PASS' : 'ISSUES FOUND'} — ${aiCheck.summary}`, aiCheck.pass ? 'ok' : 'warn');
+      } catch (err) {
+        log(`  · AI check failed: ${err.message}`, 'warn');
+        result.aiCheck = null;
+      }
+    }
+
+    // Determine overall status
+    const overallPass = validation.failed === 0 && submitResult.ok &&
+      (!result.aiCheck || result.aiCheck.pass);
+    const hasWarning = validation.failed === 0 && submitResult.ok &&
+      result.aiCheck && !result.aiCheck.pass;
+    result.status = overallPass ? 'pass' : hasWarning ? 'warn' : 'fail';
+
+    testResults.push(result);
+    setProgress(15 + (i + 1) * progressStep, `Test ${testNum} complete`);
+  }
+
+  // Overall AI summary
+  setProgress(90, 'Generating AI summary...');
+  log('Generating overall test summary...', 'info');
+  let overallSummary = null;
+  try {
+    overallSummary = await generateOverallSummary(testResults);
+    log('✓ Summary generated', 'ok');
+  } catch (err) {
+    log('Could not generate summary: ' + err.message, 'warn');
+  }
+
+  setProgress(100, 'Complete');
+  log('══ All tests complete ══', 'ok');
+
+  // Render results
+  renderResults(testResults, overallSummary);
+
+  btn.disabled = false;
+  btn.innerHTML = '▶ Run Automated Test Suite';
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER RESULTS
+// ══════════════════════════════════════════════════════════════
+function renderResults(results, summary) {
+  const panel = document.getElementById('results-panel');
+  panel.style.display = 'block';
+
+  // Stats
+  const total = results.length;
+  const passed = results.filter(r => r.status === 'pass').length;
+  const failed = results.filter(r => r.status === 'fail').length;
+  const warned = results.filter(r => r.status === 'warn').length;
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card stat-total"><div class="stat-num">${total}</div><div class="stat-label">Total Runs</div></div>
+    <div class="stat-card stat-pass"><div class="stat-num">${passed}</div><div class="stat-label">Passed</div></div>
+    <div class="stat-card stat-warn"><div class="stat-num">${warned}</div><div class="stat-label">Warnings</div></div>
+    <div class="stat-card stat-fail"><div class="stat-num">${failed}</div><div class="stat-label">Failed</div></div>
+  `;
+
+  // AI Summary
+  if (summary) {
+    document.getElementById('ai-summary-text').textContent = summary;
+    document.getElementById('ai-summary').style.display = 'block';
+  }
+
+  // Test cards
+  const list = document.getElementById('test-list');
+  list.innerHTML = '';
+
+  results.forEach((r, idx) => {
+    const card = document.createElement('div');
+    card.className = 'test-card';
+    card.id = `test-card-${idx}`;
+
+    const statusLabel = r.status === 'pass' ? 'PASS' : r.status === 'warn' ? 'WARN' : 'FAIL';
+    const statusClass = `status-${r.status}`;
+
+    // Build field comparison rows
+    let inputRows = '', outputRows = '';
+    for (const field of FORM_CONFIG.fields) {
+      const inVal = r.scenario[field.name];
+      const outVal = r.payload[field.name];
+      const displayIn = Array.isArray(inVal) ? inVal.join(', ') : (inVal || '');
+      const displayOut = outVal || '';
+      const match = displayIn === displayOut ||
+        (Array.isArray(inVal) && displayOut === inVal.join(', '));
+
+      inputRows += `<div class="field-row">
+        <div class="field-name">${field.name}</div>
+        <div class="field-val">${displayIn ? displayIn.slice(0,60) + (displayIn.length > 60 ? '…' : '') : '<span class="field-miss">—</span>'}</div>
+      </div>`;
+
+      outputRows += `<div class="field-row">
+        <div class="field-name">${field.name}</div>
+        <div class="field-val ${match ? 'field-ok' : 'field-fail'}">${displayOut ? displayOut.slice(0,60) + (displayOut.length > 60 ? '…' : '') : '<span class="field-miss">—</span>'}</div>
+      </div>`;
+    }
+
+    // Validation checks
+    const checksHtml = r.validation.checks.map(c => `
+      <div class="check-item ${c.pass ? 'check-ok' : 'check-fail'}">
+        <span class="check-icon">${c.pass ? '✓' : '✗'}</span>
+        <span>${c.label} <span style="color:var(--text-dim);font-size:0.62rem;">${c.detail.slice(0,50)}</span></span>
+      </div>`).join('');
+
+    // AI integrity
+    let integrityHtml = '';
+    if (r.aiCheck) {
+      const cls = r.aiCheck.pass ? 'integrity-pass' : (r.validation.failed === 0 ? 'integrity-warn' : 'integrity-fail');
+      const issuesHtml = r.aiCheck.issues && r.aiCheck.issues.length > 0
+        ? `<ul style="margin-top:6px;padding-left:16px;font-size:0.72rem;color:var(--warning);">` +
+          r.aiCheck.issues.map(i => `<li>${i}</li>`).join('') + `</ul>`
+        : '';
+      integrityHtml = `
+        <div class="integrity-section" style="grid-column:1/-1;">
+          <div class="section-title">AI Integrity Check</div>
+          <div class="integrity-result ${cls}">${r.aiCheck.summary}${issuesHtml}</div>
+        </div>`;
+    }
+
+    // Tags for business type + submit mode
+    const submitTag = r.submitResult.mock
+      ? `<span class="tag">MOCK</span>`
+      : `<span class="tag" style="border-color:rgba(0,255,136,0.3);color:var(--success);">LIVE</span>`;
+
+    card.innerHTML = `
+      <div class="test-card-header" onclick="toggleCard(${idx})">
+        <span class="test-status ${statusClass}">${statusLabel}</span>
+        <span class="test-card-name">${r.scenario.owner_name}</span>
+        <span class="test-card-type">${r.scenario.business_type} ${submitTag}</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="test-card-body">
+        <div class="test-sections">
+          <div class="test-section">
+            <div class="section-title">Input Scenario</div>
+            ${inputRows}
+          </div>
+          <div class="test-section">
+            <div class="section-title">Submitted Payload</div>
+            ${outputRows}
+          </div>
+        </div>
+        <div style="padding:16px;border-top:1px solid var(--border);">
+          <div class="section-title" style="margin-bottom:10px;">Validation Checks (${r.validation.passed}/${r.validation.total} passed)</div>
+          <div class="checks-list">${checksHtml}</div>
+        </div>
+        ${integrityHtml}
+      </div>`;
+
+    list.appendChild(card);
+  });
+
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function toggleCard(idx) {
+  const card = document.getElementById(`test-card-${idx}`);
+  card.classList.toggle('open');
+}
+</script>
+</body>
+</html>
