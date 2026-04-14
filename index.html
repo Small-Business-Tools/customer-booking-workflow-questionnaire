@@ -510,6 +510,12 @@
             </div>
 
             <div class="card">
+                <label class="qlabel" for="business_website">Your website address</label>
+                <p class="hint">If you have one — leave blank if not.</p>
+                <input type="text" id="business_website" name="business_website" placeholder="e.g. www.yourbusiness.com">
+            </div>
+
+            <div class="card">
                 <label class="qlabel">How many people handle bookings in your business? <span class="req">*</span></label>
                 <div class="radio-group">
                     <label class="opt"><input type="radio" name="team_size" value="Just me" required><span>Just me</span></label>
@@ -584,6 +590,7 @@
                     <label class="opt"><input type="radio" name="response_time" value="Within minutes" required><span>Within minutes</span></label>
                     <label class="opt"><input type="radio" name="response_time" value="Within the hour"><span>Within the hour</span></label>
                     <label class="opt"><input type="radio" name="response_time" value="Within a few hours"><span>Within a few hours</span></label>
+                    <label class="opt"><input type="radio" name="response_time" value="End of day"><span>End of day</span></label>
                     <label class="opt"><input type="radio" name="response_time" value="Next day"><span>Next day</span></label>
                 </div>
             </div>
@@ -760,26 +767,6 @@
             <div class="step-title">Technical Context</div>
 
             <div class="card">
-                <label class="qlabel">How comfortable are you with technology? <span class="req">*</span></label>
-                <div class="radio-group">
-                    <label class="opt"><input type="radio" name="tech_comfort" value="Not very — I prefer simple and hands-off" required><span>Not very — I prefer simple and hands-off</span></label>
-                    <label class="opt"><input type="radio" name="tech_comfort" value="Moderate — I can follow instructions and manage basic tools"><span>Moderate — I can follow instructions and manage basic tools</span></label>
-                    <label class="opt"><input type="radio" name="tech_comfort" value="Comfortable — I use apps and software regularly"><span>Comfortable — I use apps and software regularly</span></label>
-                    <label class="opt"><input type="radio" name="tech_comfort" value="Very comfortable — happy to set things up myself"><span>Very comfortable — happy to set things up myself</span></label>
-                </div>
-            </div>
-
-            <div class="card">
-                <label class="qlabel">What devices do your customers mainly use to contact you? <span class="req">*</span></label>
-                <div class="radio-group">
-                    <label class="opt"><input type="radio" name="customer_device" value="Mostly iPhone" required><span>Mostly iPhone</span></label>
-                    <label class="opt"><input type="radio" name="customer_device" value="Mostly Android"><span>Mostly Android</span></label>
-                    <label class="opt"><input type="radio" name="customer_device" value="Mix of both"><span>Mix of both</span></label>
-                    <label class="opt"><input type="radio" name="customer_device" value="I don't know"><span>I don't know</span></label>
-                </div>
-            </div>
-
-            <div class="card">
                 <label class="qlabel">Are you open to using new apps or tools as part of this solution? <span class="req">*</span></label>
                 <div class="radio-group">
                     <label class="opt"><input type="radio" name="new_tools" value="Yes, happy to use whatever works best" required><span>Yes, happy to use whatever works best</span></label>
@@ -945,6 +932,7 @@
     // ── Build review panel ──
     const LABELS = {
         owner_name: 'Name', owner_email: 'Email', business_type: 'Business type',
+        business_website: 'Website',
         team_size: 'Team size handling bookings',
         channels: 'Contact channels', primary_channel: 'Primary channel', daily_volume: 'Daily enquiries',
         daily_time: 'Time per day on bookings', busy_times: 'Busiest period', response_time: 'Typical response time',
@@ -955,19 +943,18 @@
         pain_points: 'Pain points', other_frustrations: 'Other frustrations', error_frequency: 'Scheduling error frequency',
         amazing_vision: 'What amazing looks like', must_have: 'Must-haves',
         nice_to_have: 'Nice-to-haves', personal_feel_score: 'Personal feel score (1–10)',
-        tech_comfort: 'Tech comfort level', customer_device: 'Customer devices',
         new_tools: 'Open to new tools', existing_tools: 'Existing tools', anything_else: 'Anything else'
     };
 
     const SECTIONS = [
-        { title: 'About You', keys: ['owner_name','owner_email','business_type','team_size'] },
+        { title: 'About You', keys: ['owner_name','owner_email','business_type','business_website','team_size'] },
         { title: 'Communication', keys: ['channels','primary_channel','daily_volume'] },
         { title: 'Time Investment', keys: ['daily_time','busy_times','response_time'] },
         { title: 'Calendars & Availability', keys: ['calendar_tools','calendar_count','negotiation_frequency','negotiation_desc'] },
         { title: 'Customer Journey', keys: ['customer_ratio','new_customer_flow','returning_customer_flow','required_info'] },
         { title: 'Pain Points', keys: ['pain_points','other_frustrations','error_frequency'] },
         { title: 'What Amazing Looks Like', keys: ['amazing_vision','must_have','nice_to_have','personal_feel_score'] },
-        { title: 'Technical Context', keys: ['tech_comfort','customer_device','new_tools','existing_tools','anything_else'] },
+        { title: 'Technical Context', keys: ['new_tools','existing_tools','anything_else'] },
     ];
 
     function buildReview() {
