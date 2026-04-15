@@ -314,8 +314,18 @@ async function claude(sys, user, tokens) {
 async function genScenarios(count, edges) {
   var sys = 'Generate realistic test data for a booking discovery questionnaire. Return ONLY a valid JSON array, no markdown, no backticks. Each object must have: owner_name, owner_email, business_type, team_size, channels (array), primary_channel, daily_volume, daily_time, busy_times, response_time, calendar_tools (array), calendar_count, negotiation_frequency, negotiation_desc, customer_ratio, new_customer_flow, returning_customer_flow, required_info, pain_points, other_frustrations, error_frequency, amazing_vision, must_have, nice_to_have, personal_feel_score, new_tools, existing_tools, anything_else.\nValid: team_size: just-me|2-3|4-10|10+; channels from [sms,whatsapp,email,phone,instagram,facebook]; primary_channel: sms|whatsapp|email|phone|instagram|facebook; daily_volume: 1-5|6-15|16-30|30+; daily_time: under-30|30-60|1-2hrs|2-3hrs|3hrs+; busy_times: mornings|evenings|weekends|all-day|no-pattern; response_time: immediately|within-hour|few-hours|end-of-day|next-day; calendar_tools from [google,apple,outlook,paper,other]; calendar_count: 1|2-3|4-5|6+; negotiation_frequency: rarely|sometimes|often|very-often; customer_ratio: mostly-new|mostly-returning|even-split; error_frequency: never|rarely|sometimes|often; personal_feel_score: 1-10 as string; new_tools: yes|maybe|prefer-not.';
   var edge = edges ? ' Include 1 scenario with very long text (200+ chars) in free-text fields and apostrophes/ampersands.' : '';
-  var raw = await claude(sys, 'Generate '+count+' varied scenarios (photography, dog grooming, personal training, hair salon, music lessons, tutoring etc).'+edge+' JSON array only.', 2500);
-  return JSON.parse(raw.replace(/```json|```/g,'').trim());
+  var raw = await claude(sys, 'Generate '+count+' varied scenarios (photography, dog grooming, personal training, hair salon, music lessons, tutoring etc).'+edge+' JSON array only. Keep all free-text fields under 80 characters.', 4000);
+  var cleaned = raw.replace(/```json|```/g,'').trim();
+  // Safety net: if response was truncated, trim to last complete object
+  var lastBracket = cleaned.lastIndexOf('}');
+  if (lastBracket !== -1 && !cleaned.endsWith(']')) {
+    cleaned = cleaned.substring(0, lastBracket + 1) + ']';
+  }
+  try {
+    return JSON.parse(cleaned);
+  } catch(e) {
+    throw new Error('Scenario JSON parse failed — try reducing scenario count or disabling edge cases. Detail: ' + e.message);
+  }
 }
 
 // ── PAYLOAD BUILDER ───────────────────────────
